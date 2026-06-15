@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Edit Profile — BlogIT{% endblock %}
+{% block content %}
+<div class="page-hero page-hero--sm"><div class="container"><h1>Edit Profile</h1></div></div>
+<div class="container section-pad">
+  <div class="form-page form-page--narrow">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% if user.profile.avatar %}
+      <div class="current-avatar">
+        <img src="{{ user.profile.avatar.url }}" class="avatar-lg" alt="Current avatar" />
+        <small>Current avatar</small>
+      </div>
+      {% endif %}
+      {{ form|crispy }}
+      <div class="form-actions">
+        <button type="submit" class="btn-cta">Save Profile</button>
+        <a href="{% url 'blog:dashboard' %}" class="btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

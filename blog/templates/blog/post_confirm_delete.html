@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Delete Post — DjangoBlog{% endblock %}
+{% block content %}
+<div class="container section-pad">
+  <div class="form-page form-page--narrow">
+    <div class="danger-card">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <h2>Delete Post?</h2>
+      <p>You are about to permanently delete <strong>"{{ post.title }}"</strong>. This cannot be undone.</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+          <button type="submit" class="btn-danger">Yes, Delete</button>
+          <a href="{{ post.get_absolute_url }}" class="btn-ghost">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

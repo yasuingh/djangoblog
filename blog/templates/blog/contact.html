@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Contact — DjangoBlog{% endblock %}
+{% block content %}
+<div class="page-hero page-hero--sm"><div class="container"><h1>Get in Touch</h1><p>Questions, ideas, or just want to say hello?</p></div></div>
+<div class="container section-pad"><div class="form-page form-page--narrow">
+  <form method="post" class="contact-form">{% csrf_token %}{{ form|crispy }}</form>
+</div></div>
+{% endblock %}

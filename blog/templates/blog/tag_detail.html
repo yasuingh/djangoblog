@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}#{{ tag.name }} — DjangoBlog{% endblock %}
+{% block content %}
+<div class="page-hero page-hero--sm">
+  <div class="container">
+    <p class="hero-eyebrow"><span class="dot"></span> Tag</p>
+    <h1>#{{ tag.name }}</h1>
+    <p>{{ page_obj.paginator.count }} post{{ page_obj.paginator.count|pluralize }}</p>
+  </div>
+</div>
+<div class="container section-pad">
+  <div class="post-grid">
+    {% for post in page_obj %}
+    <article class="post-card animate-in">
+      {% if post.cover_image %}<a href="{{ post.get_absolute_url }}" class="post-card-img"><img src="{{ post.cover_image.url }}" alt="{{ post.title }}" loading="lazy" /></a>{% endif %}
+      <div class="post-card-body">
+        <h3 class="post-card-title"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+        <p class="post-card-excerpt">{{ post.excerpt|truncatewords:20 }}</p>
+        <div class="post-card-meta">
+          <img src="{{ post.author.profile.avatar_url }}" class="avatar-xs" alt="" />
+          <span>{{ post.author.get_full_name|default:post.author.username }}</span>
+          <span class="meta-dot">·</span><time>{{ post.publish|date:"M j, Y" }}</time>
+        </div>
+      </div>
+    </article>
+    {% empty %}<div class="empty-state"><p>No posts with this tag.</p></div>
+    {% endfor %}
+  </div>
+  {% if page_obj.has_other_pages %}
+  <nav class="pagination-nav">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="page-btn">← Prev</a>{% endif %}
+    <span class="page-info">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="page-btn">Next →</a>{% endif %}
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

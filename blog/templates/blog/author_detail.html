@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ author.get_full_name|default:author.username }} — DjangoBlog{% endblock %}
+{% block content %}
+<div class="page-hero page-hero--sm">
+  <div class="container">
+    <div class="author-hero">
+      <img src="{{ author.profile.avatar_url }}" class="avatar-xl" alt="{{ author.username }}" />
+      <div>
+        <h1>{{ author.get_full_name|default:author.username }}</h1>
+        <p>{{ author.profile.bio|default:"Writer at DjangoBlog" }}</p>
+        <div class="author-socials">
+          {% if author.profile.twitter %}<a href="https://twitter.com/{{ author.profile.twitter }}" target="_blank"><i class="bi bi-twitter-x"></i></a>{% endif %}
+          {% if author.profile.github %}<a href="https://github.com/{{ author.profile.github }}" target="_blank"><i class="bi bi-github"></i></a>{% endif %}
+          {% if author.profile.website %}<a href="{{ author.profile.website }}" target="_blank"><i class="bi bi-globe"></i></a>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container section-pad">
+  <h3 class="section-title-sm mb-4"><span class="accent-line"></span> Posts by {{ author.get_full_name|default:author.username }}</h3>
+  <div class="post-grid">
+    {% for post in page_obj %}
+    <article class="post-card animate-in">
+      {% if post.cover_image %}<a href="{{ post.get_absolute_url }}" class="post-card-img"><img src="{{ post.cover_image.url }}" alt="{{ post.title }}" loading="lazy" /></a>{% endif %}
+      <div class="post-card-body">
+        {% if post.category %}<a href="{{ post.category.get_absolute_url }}" class="tag-pill">{{ post.category.name }}</a>{% endif %}
+        <h3 class="post-card-title"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+        <p class="post-card-excerpt">{{ post.excerpt|truncatewords:20 }}</p>
+        <div class="post-card-meta"><time>{{ post.publish|date:"M j, Y" }}</time><span class="meta-dot">·</span><span>{{ post.reading_time }} min</span></div>
+      </div>
+    </article>
+    {% empty %}<div class="empty-state"><p>No published posts yet.</p></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

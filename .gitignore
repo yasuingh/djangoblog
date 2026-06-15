@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.xenv
+db.sqlite3
+cstaticfiles/
+med*.log
+.DS_Store
+.coverage
+htmlcov/
+*.egg-info/

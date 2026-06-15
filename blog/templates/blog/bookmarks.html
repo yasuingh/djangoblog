@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Bookmarks — DjangoBlog{% endblock %}
+{% block content %}
+<div class="page-hero page-hero--sm"><div class="container"><h1>Your Bookmarks</h1><p>{{ bookmarks.count }} saved post{{ bookmarks.count|pluralize }}</p></div></div>
+<div class="container section-pad">
+  <div class="post-grid">
+    {% for bookmark in bookmarks %}
+    <article class="post-card animate-in">
+      {% if bookmark.post.cover_image %}<a href="{{ bookmark.post.get_absolute_url }}" class="post-card-img"><img src="{{ bookmark.post.cover_image.url }}" alt="{{ bookmark.post.title }}" loading="lazy" /></a>{% endif %}
+      <div class="post-card-body">
+        {% if bookmark.post.category %}<a href="{{ bookmark.post.category.get_absolute_url }}" class="tag-pill">{{ bookmark.post.category.name }}</a>{% endif %}
+        <h3 class="post-card-title"><a href="{{ bookmark.post.get_absolute_url }}">{{ bookmark.post.title }}</a></h3>
+        <p class="post-card-excerpt">{{ bookmark.post.excerpt|truncatewords:18 }}</p>
+        <div class="post-card-meta">
+          <img src="{{ bookmark.post.author.profile.avatar_url }}" class="avatar-xs" alt="" />
+          <span>{{ bookmark.post.author.get_full_name|default:bookmark.post.author.username }}</span>
+          <span class="meta-dot">·</span>
+          <time>Saved {{ bookmark.created|date:"M j" }}</time>
+        </div>
+      </div>
+    </article>
+    {% empty %}
+    <div class="empty-state">
+      <i class="bi bi-bookmark"></i>
+      <p>You haven't bookmarked any posts yet. <a href="{% url 'blog:post_list' %}">Browse posts</a></p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

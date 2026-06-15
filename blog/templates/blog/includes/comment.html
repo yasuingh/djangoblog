@@ -1,0 +1,28 @@
+{% load blog_tags %}
+<div class="comment {% if depth > 0 %}comment--reply{% endif %}" id="comment-{{ comment.id }}">
+  <img src="{{ comment.author.profile.avatar_url|default:'/static/img/default-avatar.svg' }}" class="avatar-sm" alt="" />
+  <div class="comment-body">
+    <div class="comment-header">
+      <strong>{{ comment.get_display_name }}</strong>
+      <time>{{ comment.created|timesince }} ago</time>
+    </div>
+    <p>{{ comment.body }}</p>
+    <div class="comment-actions">
+      <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
+        <i class="bi bi-heart"></i> {{ comment.total_likes }}
+      </button>
+      {% if depth == 0 and post.allow_comments and user.is_authenticated %}
+      <button class="reply-btn text-link" data-comment-id="{{ comment.id }}">
+        <i class="bi bi-reply"></i> Reply
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% if comment.replies.all and depth == 0 %}
+<div class="replies-list">
+  {% for reply in comment.replies.all %}
+  {% include "blog/includes/comment.html" with comment=reply depth=1 %}
+  {% endfor %}
+</div>
+{% endif %}

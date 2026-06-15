@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static blog_tags %}
+
+{% block title %}DjangoBlog — Ideas Worth Reading{% endblock %}
+
+{% block content %}
+
+<!-- ░░ HERO ░░ -->
+<section class="hero">
+  <div class="hero-bg-text" aria-hidden="true">BLOG</div>
+  <div class="container">
+    <div class="hero-inner">
+      <p class="hero-eyebrow"><span class="dot"></span> Est. {{ "now"|date:"Y" }}</p>
+      <h1 class="hero-headline">Ideas, Stories<br/>&amp; <em>Deep Dives</em></h1>
+      <p class="hero-sub">Thoughtful writing on technology, design, and the things that matter.</p>
+      <div class="hero-actions">
+        <a href="{% url 'blog:post_list' %}" class="btn-hero-primary">Explore Posts <i class="bi bi-arrow-right"></i></a>
+        <a href="{% url 'blog:about' %}" class="btn-hero-ghost">About the blog</a>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll-hint"><i class="bi bi-chevron-double-down"></i></div>
+</section>
+
+<!-- ░░ FEATURED POSTS ░░ -->
+{% if featured_posts %}
+<section class="section-featured">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title"><span class="accent-line"></span> Featured</h2>
+    </div>
+
+    <div class="featured-grid">
+      {% for post in featured_posts %}
+      <article class="featured-card {% if forloop.first %}featured-card--main{% endif %}">
+        {% if post.cover_image %}
+        <a href="{{ post.get_absolute_url }}" class="card-img-wrap">
+          <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" loading="lazy" />
+          {% if forloop.first %}<span class="badge-featured">Featured</span>{% endif %}
+        </a>
+        {% endif %}
+        <div class="card-body">
+          {% if post.category %}
+          <a href="{{ post.category.get_absolute_url }}" class="card-category">{{ post.category.name }}</a>
+          {% endif %}
+          <h3 class="card-title"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+          {% if forloop.first %}<p class="card-excerpt">{{ post.excerpt }}</p>{% endif %}
+          <div class="card-meta">
+            <img src="{{ post.author.profile.avatar_url }}" class="avatar-xs" alt="{{ post.author.username }}" />
+            <a href="{{ post.author.profile.get_absolute_url }}" class="meta-author">{{ post.author.get_full_name|default:post.author.username }}</a>
+            <span class="meta-dot">·</span>
+            <time>{{ post.publish|date:"N j, Y" }}</time>
+            <span class="meta-dot">·</span>
+            <span>{{ post.reading_time }} min read</span>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ░░ LATEST POSTS ░░ -->
+<section class="section-latest">
+  <div class="container">
+    <div class="latest-layout">
+
+      <!-- Main feed -->
+      <div class="latest-feed">
+        <div class="section-header">
+          <h2 class="section-title"><span class="accent-line"></span> Latest</h2>
+          <a href="{% url 'blog:post_list' %}" class="view-all">View all <i class="bi bi-arrow-right"></i></a>
+        </div>
+
+        <div class="post-grid">
+          {% for post in latest_posts %}
+          <article class="post-card" style="--delay: {{ forloop.counter0 }}00ms">
+            {% if post.cover_image %}
+            <a href="{{ post.get_absolute_url }}" class="post-card-img">
+              <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" loading="lazy" />
+            </a>
+            {% endif %}
+            <div class="post-card-body">
+              <div class="post-card-top">
+                {% if post.category %}<a href="{{ post.category.get_absolute_url }}" class="tag-pill">{{ post.category.name }}</a>{% endif %}
+                {% for tag in post.tags.all|slice:":2" %}<a href="{% url 'blog:tag_detail' tag.slug %}" class="tag-pill tag-pill--outline">{{ tag.name }}</a>{% endfor %}
+              </div>
+              <h3 class="post-card-title"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+              <p class="post-card-excerpt">{{ post.excerpt|truncatewords:20 }}</p>
+              <div class="post-card-footer">
+                <div class="post-card-meta">
+                  <img src="{{ post.author.profile.avatar_url }}" class="avatar-xs" alt="" />
+                  <span>{{ post.author.get_full_name|default:post.author.username }}</span>
+                  <span class="meta-dot">·</span>
+                  <time>{{ post.publish|date:"M j" }}</time>
+                </div>
+                <div class="post-card-stats">
+                  <span><i class="bi bi-eye"></i> {{ post.views }}</span>
+                  <span><i class="bi bi-chat"></i> {{ post.comments.count }}</span>
+                </div>
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="home-sidebar">
+        <!-- Categories -->
+        <div class="sidebar-widget">
+          <h4 class="widget-title">Topics</h4>
+          <ul class="category-list">
+            {% for cat in categories %}
+            <li>
+              <a href="{{ cat.get_absolute_url }}">
+                <span>{{ cat.name }}</span>
+                <span class="cat-count">{{ cat.post_count }}</span>
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Popular posts -->
+        <div class="sidebar-widget">
+          <h4 class="widget-title">Most Read</h4>
+          {% for post in popular_posts %}
+          <div class="popular-item">
+            <span class="popular-num">0{{ forloop.counter }}</span>
+            <div>
+              <a href="{{ post.get_absolute_url }}" class="popular-title">{{ post.title }}</a>
+              <p class="popular-meta">{{ post.views }} views · {{ post.reading_time }} min</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Newsletter widget -->
+        <div class="sidebar-widget widget-newsletter">
+          <div class="newsletter-icon">✉</div>
+          <h4>Newsletter</h4>
+          <p>Get the best posts delivered weekly.</p>
+          <form action="{% url 'blog:newsletter_subscribe' %}" method="post">
+            {% csrf_token %}
+            <input type="email" name="email" placeholder="your@email.com" required />
+            <button type="submit">Subscribe</button>
+          </form>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

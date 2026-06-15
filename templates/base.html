@@ -1,0 +1,172 @@
+{% load static blog_tags %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}DjangoBlog{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}A thoughtful blog about ideas that matter.{% endblock %}" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ░░ NAVBAR ░░ -->
+<nav class="navbar navbar-expand-lg sticky-top" id="mainNav">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'blog:home' %}">
+      <span class="brand-icon">✦</span>
+      <span class="brand-text">DjangoBlog</span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navContent">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
+        <li class="nav-item"><a class="nav-link" href="{% url 'blog:home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'blog:post_list' %}">Posts</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Topics</a>
+          <ul class="dropdown-menu">
+            {% for cat in global_categories %}
+            <li><a class="dropdown-item" href="{{ cat.get_absolute_url }}">{{ cat.name }} <span class="badge-count">{{ cat.post_count }}</span></a></li>
+            {% empty %}
+            <li><a class="dropdown-item" href="#">No categories yet</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'blog:about' %}">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'blog:contact' %}">Contact</a></li>
+      </ul>
+
+      <div class="nav-actions ms-3 d-flex align-items-center gap-2">
+        <!-- Search -->
+        <form class="search-inline" action="{% url 'blog:search' %}" method="get">
+          <div class="search-wrap">
+            <input type="text" name="query" placeholder="Search…" class="search-field" autocomplete="off" />
+            <button type="submit"><i class="bi bi-search"></i></button>
+          </div>
+        </form>
+
+        <!-- Theme toggle -->
+        <button class="btn-theme-toggle" id="themeToggle" title="Toggle theme">
+          <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+        </button>
+
+        {% if user.is_authenticated %}
+        <div class="dropdown">
+          <button class="btn-user-menu" data-bs-toggle="dropdown">
+            <img src="{{ user.profile.avatar_url }}" alt="avatar" class="avatar-sm" />
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end user-dropdown">
+            <li class="dropdown-header">
+              <strong>{{ user.get_full_name|default:user.username }}</strong>
+              <small>{{ user.email }}</small>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'blog:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'blog:post_create' %}"><i class="bi bi-pencil-square"></i> New Post</a></li>
+            <li><a class="dropdown-item" href="{% url 'blog:bookmarks' %}"><i class="bi bi-bookmark-fill"></i> Bookmarks</a></li>
+            <li><a class="dropdown-item" href="{% url 'blog:profile_edit' %}"><i class="bi bi-person-gear"></i> Edit Profile</a></li>
+            {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock"></i> Admin</a></li>{% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'account_logout' %}"><i class="bi bi-box-arrow-right"></i> Sign Out</a></li>
+          </ul>
+        </div>
+        {% else %}
+        <a href="{% url 'account_login' %}" class="btn-nav-auth">Sign In</a>
+        <a href="{% url 'account_signup' %}" class="btn-nav-cta">Get Started</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ░░ MESSAGES ░░ -->
+{% if messages %}
+<div class="messages-container">
+  {% for message in messages %}
+  <div class="alert-toast alert-toast-{{ message.tags }}" role="alert">
+    <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}x-circle{% else %}info-circle{% endif %}"></i>
+    {{ message }}
+    <button type="button" class="toast-close" onclick="this.parentElement.remove()">×</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ░░ MAIN CONTENT ░░ -->
+<main id="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ░░ FOOTER ░░ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="{% url 'blog:home' %}" class="footer-logo">✦ DjangoBlog</a>
+        <p>A space for ideas, code, and stories worth reading.</p>
+        <a href="{% url 'blog:post_feed' %}" class="rss-link"><i class="bi bi-rss-fill"></i> RSS Feed</a>
+      </div>
+
+      <div class="footer-links">
+        <h5>Navigate</h5>
+        <ul>
+          <li><a href="{% url 'blog:post_list' %}">All Posts</a></li>
+          <li><a href="{% url 'blog:about' %}">About</a></li>
+          <li><a href="{% url 'blog:contact' %}">Contact</a></li>
+          {% if user.is_authenticated %}
+          <li><a href="{% url 'blog:dashboard' %}">Dashboard</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h5>Topics</h5>
+        <ul>
+          {% for cat in global_categories|slice:":6" %}
+          <li><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="footer-newsletter">
+        <h5>Stay Updated</h5>
+        <p>Get the latest posts straight to your inbox.</p>
+        <form action="{% url 'blog:newsletter_subscribe' %}" method="post" class="newsletter-form">
+          {% csrf_token %}
+          <input type="email" name="email" placeholder="your@email.com" required />
+          <button type="submit">Subscribe</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© {% now "Y" %} BLOGit. Built with Django.</span>
+      <span class="footer-legal">
+        <a href="/sitemap.xml">Sitemap</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<!-- ░░ SCRIPTS ░░ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Search{% if query %}: {{ query }}{% endif %} — DjangoBlog{% endblock %}
+{% block content %}
+<div class="page-hero page-hero--sm">
+  <div class="container">
+    <h1>Search</h1>
+    <form action="{% url 'blog:search' %}" method="get" class="hero-search-form">
+      <input type="text" name="query" value="{{ query }}" placeholder="Search posts…" class="search-field-lg" autofocus />
+      <button type="submit" class="btn-cta">Search</button>
+    </form>
+  </div>
+</div>
+<div class="container section-pad">
+  {% if query %}
+  <p class="search-results-info">{{ page_obj.paginator.count }} result{% if page_obj.paginator.count != 1 %}s{% endif %} for "<strong>{{ query }}</strong>"</p>
+  <div class="post-grid">
+    {% for post in page_obj %}
+    <article class="post-card animate-in">
+      <div class="post-card-body">
+        {% if post.category %}<a href="{{ post.category.get_absolute_url }}" class="tag-pill">{{ post.category.name }}</a>{% endif %}
+        <h3 class="post-card-title"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+        <p class="post-card-excerpt">{{ post.excerpt|truncatewords:20 }}</p>
+      </div>
+    </article>
+    {% empty %}
+    <div class="empty-state"><i class="bi bi-search"></i><p>No results found.</p></div>
+    {% endfor %}
+  </div>
+  {% if page_obj.has_other_pages %}
+  <nav class="pagination-nav">
+    {% if page_obj.has_previous %}<a href="?query={{ query }}&page={{ page_obj.previous_page_number }}" class="page-btn">← Prev</a>{% endif %}
+    <span class="page-info">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?query={{ query }}&page={{ page_obj.next_page_number }}" class="page-btn">Next →</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load blog_tags %}
+
+{% block title %}All Posts — DjangoBlog{% endblock %}
+
+{% block content %}
+<div class="page-hero page-hero--sm">
+  <div class="container">
+    <h1>All Posts</h1>
+    <p>{{ paginator.count }} article{% if paginator.count != 1 %}s{% endif %} and counting.</p>
+  </div>
+</div>
+
+<div class="container section-pad">
+  <div class="posts-layout">
+    <div class="posts-main">
+      <div class="post-grid">
+        {% for post in posts %}
+        <article class="post-card animate-in" style="--delay:{{ forloop.counter0 }}0ms">
+          {% if post.cover_image %}
+          <a href="{{ post.get_absolute_url }}" class="post-card-img">
+            <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" loading="lazy" />
+          </a>
+          {% endif %}
+          <div class="post-card-body">
+            <div class="post-card-top">
+              {% if post.category %}<a href="{{ post.category.get_absolute_url }}" class="tag-pill">{{ post.category.name }}</a>{% endif %}
+            </div>
+            <h2 class="post-card-title"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
+            <p class="post-card-excerpt">{{ post.excerpt|truncatewords:25 }}</p>
+            <div class="post-card-footer">
+              <div class="post-card-meta">
+                <img src="{{ post.author.profile.avatar_url }}" class="avatar-xs" alt="" />
+                <span>{{ post.author.get_full_name|default:post.author.username }}</span>
+                <span class="meta-dot">·</span>
+                <time>{{ post.publish|date:"M j, Y" }}</time>
+                <span class="meta-dot">·</span>
+                <span>{{ post.reading_time }} min</span>
+              </div>
+            </div>
+          </div>
+        </article>
+        {% empty %}
+        <div class="empty-state">
+          <i class="bi bi-journal-x"></i>
+          <p>No posts published yet.</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav class="pagination-nav">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="page-btn"><i class="bi bi-chevron-left"></i> Prev</a>
+        {% endif %}
+        <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="page-btn">Next <i class="bi bi-chevron-right"></i></a>
+        {% endif %}
+      </nav>
+      {% endif %}
+    </div>
+
+    <!-- Filter sidebar -->
+    <aside class="posts-sidebar">
+      <div class="sidebar-widget">
+        <h5 class="widget-title">Categories</h5>
+        <ul class="category-list">
+          {% for cat in categories %}
+          <li><a href="{{ cat.get_absolute_url }}"><span>{{ cat.name }}</span><span class="cat-count">{{ cat.post_count }}</span></a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="sidebar-widget">
+        <h5 class="widget-title">Popular Tags</h5>
+        <div class="tag-cloud">
+          {% for tag in popular_tags %}
+          <a href="/tag/{{ tag.tags__slug }}/" class="tag-pill">{{ tag.tags__name }} <span class="tag-count">{{ tag.count }}</span></a>
+          {% endfor %}
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

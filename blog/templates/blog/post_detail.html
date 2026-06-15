@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% load static blog_tags %}
+
+{% block title %}{{ post.title }} — DjangoBlog{% endblock %}
+{% block meta_description %}{{ post.meta_description|default:post.excerpt }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="post-detail-layout">
+
+    <!-- ░░ ARTICLE ░░ -->
+    <article class="post-article">
+
+      <!-- Breadcrumb -->
+      <nav class="post-breadcrumb" aria-label="breadcrumb">
+        <a href="{% url 'blog:home' %}">Home</a> /
+        {% if post.category %}<a href="{{ post.category.get_absolute_url }}">{{ post.category.name }}</a> / {% endif %}
+        <span>{{ post.title|truncatechars:40 }}</span>
+      </nav>
+
+      <!-- Header -->
+      <header class="post-header">
+        <div class="post-labels">
+          {% if post.category %}<a href="{{ post.category.get_absolute_url }}" class="tag-pill">{{ post.category.name }}</a>{% endif %}
+          {% for tag in post.tags.all %}<a href="{% url 'blog:tag_detail' tag.slug %}" class="tag-pill tag-pill--outline">{{ tag.name }}</a>{% endfor %}
+        </div>
+        <h1 class="post-title">{{ post.title }}</h1>
+        <p class="post-excerpt-lead">{{ post.excerpt }}</p>
+
+        <div class="post-meta-bar">
+          <div class="post-author-chip">
+            <img src="{{ post.author.profile.avatar_url }}" class="avatar-sm" alt="{{ post.author.username }}" />
+            <div>
+              <a href="{{ post.author.profile.get_absolute_url }}" class="author-name">{{ post.author.get_full_name|default:post.author.username }}</a>
+              <time class="publish-date">{{ post.publish|date:"F j, Y" }}</time>
+            </div>
+          </div>
+          <div class="post-stats">
+            <span><i class="bi bi-eye"></i> {{ post.views }}</span>
+            <span><i class="bi bi-clock"></i> {{ post.reading_time }} min</span>
+            <span><i class="bi bi-chat"></i> {{ comments.count }}</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Cover image -->
+      {% if post.cover_image %}
+      <div class="post-cover">
+        <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" />
+      </div>
+      {% endif %}
+
+      <!-- Body -->
+      <div class="post-body prose">
+        {{ post.body|safe }}
+      </div>
+
+      <!-- Action bar -->
+      <div class="post-action-bar">
+        <div class="action-left">
+          <button class="action-btn like-btn {% if is_liked %}active{% endif %}" id="likeBtn" data-post-id="{{ post.id }}" {% if not user.is_authenticated %}onclick="window.location='{% url 'account_login' %}'"{% endif %}>
+            <i class="bi bi-heart{% if is_liked %}-fill{% endif %}"></i>
+            <span id="likeCount">{{ total_likes }}</span>
+          </button>
+          <button class="action-btn bookmark-btn {% if is_bookmarked %}active{% endif %}" id="bookmarkBtn" data-post-id="{{ post.id }}" {% if not user.is_authenticated %}onclick="window.location='{% url 'account_login' %}'"{% endif %}>
+            <i class="bi bi-bookmark{% if is_bookmarked %}-fill{% endif %}"></i>
+            <span>Save</span>
+          </button>
+        </div>
+        <div class="action-right">
+          {% social_share post %}
+        </div>
+      </div>
+
+      <!-- Author bio -->
+      <div class="author-bio-card">
+        <img src="{{ post.author.profile.avatar_url }}" class="author-bio-avatar" alt="{{ post.author.username }}" />
+        <div class="author-bio-content">
+          <h4><a href="{{ post.author.profile.get_absolute_url }}">{{ post.author.get_full_name|default:post.author.username }}</a></h4>
+          <p>{{ post.author.profile.bio|default:"Author at DjangoBlog" }}</p>
+          <div class="author-socials">
+            {% if post.author.profile.twitter %}<a href="https://twitter.com/{{ post.author.profile.twitter }}" target="_blank"><i class="bi bi-twitter-x"></i></a>{% endif %}
+            {% if post.author.profile.github %}<a href="https://github.com/{{ post.author.profile.github }}" target="_blank"><i class="bi bi-github"></i></a>{% endif %}
+            {% if post.author.profile.website %}<a href="{{ post.author.profile.website }}" target="_blank"><i class="bi bi-globe"></i></a>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Related posts -->
+      {% if related_posts %}
+      <section class="related-posts">
+        <h3 class="section-title-sm"><span class="accent-line"></span> You Might Also Like</h3>
+        <div class="related-grid">
+          {% for rp in related_posts %}
+          <a href="{{ rp.get_absolute_url }}" class="related-card">
+            {% if rp.cover_image %}<img src="{{ rp.cover_image.url }}" alt="{{ rp.title }}" />{% endif %}
+            <div class="related-card-body">
+              {% if rp.category %}<span class="tag-pill">{{ rp.category.name }}</span>{% endif %}
+              <h5>{{ rp.title }}</h5>
+              <span class="related-meta">{{ rp.publish|date:"M j, Y" }}</span>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- Comments section -->
+      {% if post.allow_comments %}
+      <section class="comments-section" id="comments">
+        <h3 class="section-title-sm"><span class="accent-line"></span> {{ comments.count|pluralize_comments }}</h3>
+
+        {% if user.is_authenticated %}
+        <div class="comment-form-wrap">
+          <img src="{{ user.profile.avatar_url }}" class="avatar-sm" alt="{{ user.username }}" />
+          <form method="post" action="{{ post.get_absolute_url }}#comments" class="comment-form" id="commentForm">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" id="parentId" value="" />
+            <textarea name="body" rows="4" placeholder="Share your thoughts…" required class="comment-textarea"></textarea>
+            <div class="comment-form-footer">
+              <button type="submit" class="btn-post-comment">Post Comment</button>
+              <button type="button" class="btn-cancel-reply hidden" id="cancelReply">Cancel reply</button>
+            </div>
+          </form>
+        </div>
+        {% else %}
+        <div class="comment-auth-prompt">
+          <i class="bi bi-lock-fill"></i>
+          <span>Please <a href="{% url 'account_login' %}?next={{ request.path }}">sign in</a> to join the discussion.</span>
+        </div>
+        {% endif %}
+
+        <!-- Comment list -->
+        <div class="comment-list" id="commentList">
+          {% for comment in comments %}
+          {% include "blog/includes/comment.html" with comment=comment depth=0 %}
+          {% empty %}
+          <div class="no-comments">
+            <i class="bi bi-chat-square-dots"></i>
+            <p>Be the first to comment.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+    </article>
+
+    <!-- ░░ SIDEBAR ░░ -->
+    <aside class="post-sidebar">
+      <!-- TOC (built by JS) -->
+      <div class="sidebar-widget sticky-toc" id="tocWidget">
+        <h5 class="widget-title">Contents</h5>
+        <nav id="tocNav"></nav>
+      </div>
+
+      <!-- Popular tags -->
+      <div class="sidebar-widget">
+        <h5 class="widget-title">Tags</h5>
+        <div class="tag-cloud">
+          {% for tag in post.tags.all %}
+          <a href="{% url 'blog:tag_detail' tag.slug %}" class="tag-pill">{{ tag.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Newsletter -->
+      <div class="sidebar-widget widget-newsletter">
+        <div class="newsletter-icon">✉</div>
+        <h5>Newsletter</h5>
+        <p>Don't miss future posts.</p>
+        <form action="{% url 'blog:newsletter_subscribe' %}" method="post">
+          {% csrf_token %}
+          <input type="email" name="email" placeholder="your@email.com" required />
+          <button type="submit">Subscribe</button>
+        </form>
+      </div>
+    </aside>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  hljs.highlightAll();
+
+  // Like toggle
+  const likeBtn = document.getElementById("likeBtn");
+  if (likeBtn) {
+    likeBtn.addEventListener("click", async () => {
+      const res = await fetch("{% url 'blog:toggle_like' %}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
+        body: JSON.stringify({post_id: "{{ post.id }}"})
+      });
+      const data = await res.json();
+      document.getElementById("likeCount").textContent = data.total;
+      likeBtn.classList.toggle("active", data.liked);
+      likeBtn.querySelector("i").className = data.liked ? "bi bi-heart-fill" : "bi bi-heart";
+    });
+  }
+
+  // Bookmark toggle
+  const bookmarkBtn = document.getElementById("bookmarkBtn");
+  if (bookmarkBtn) {
+    bookmarkBtn.addEventListener("click", async () => {
+      const res = await fetch("{% url 'blog:toggle_bookmark' %}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
+        body: JSON.stringify({post_id: "{{ post.id }}"})
+      });
+      const data = await res.json();
+      bookmarkBtn.classList.toggle("active", data.bookmarked);
+      bookmarkBtn.querySelector("i").className = data.bookmarked ? "bi bi-bookmark-fill" : "bi bi-bookmark";
+    });
+  }
+
+  // Reply buttons
+  document.querySelectorAll(".reply-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById("parentId").value = btn.dataset.commentId;
+      document.getElementById("cancelReply").classList.remove("hidden");
+      document.querySelector(".comment-textarea").focus();
+    });
+  });
+  document.getElementById("cancelReply")?.addEventListener("click", () => {
+    document.getElementById("parentId").value = "";
+    document.getElementById("cancelReply").classList.add("hidden");
+  });
+
+  // Auto TOC
+  const headings = document.querySelectorAll(".post-body h2, .post-body h3");
+  const toc = document.getElementById("tocNav");
+  if (toc && headings.length) {
+    headings.forEach((h, i) => {
+      h.id = h.id || `heading-${i}`;
+      const a = document.createElement("a");
+      a.href = `#${h.id}`;
+      a.textContent = h.textContent;
+      a.className = h.tagName === "H3" ? "toc-h3" : "toc-h2";
+      toc.appendChild(a);
+    });
+  } else if (document.getElementById("tocWidget")) {
+    document.getElementById("tocWidget").style.display = "none";
+  }
+
+  function getCookie(name) {
+    return document.cookie.split(";").find(c => c.trim().startsWith(name + "="))?.split("=")[1] || "";
+  }
+</script>
+{% endblock %}

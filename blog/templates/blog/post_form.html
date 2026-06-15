@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{{ action }} Post — DjangoBlog{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="/static/ckeditor/ckeditor/contents.css">{% endblock %}
+{% block content %}
+<div class="container section-pad">
+  <div class="form-page">
+    <div class="form-page-header">
+      <h1>{{ action }} Post</h1>
+      {% if post %}<a href="{{ post.get_absolute_url }}" class="text-link">← Back to post</a>{% endif %}
+    </div>
+    <form method="post" enctype="multipart/form-data" class="post-editor-form">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <div class="form-actions">
+        <button type="submit" class="btn-cta">{{ action }} Post</button>
+        <a href="{% url 'blog:dashboard' %}" class="btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
