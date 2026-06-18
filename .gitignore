@@ -8,6 +8,6 @@ cstaticfiles/
 med*.log
 .DS_Store
 .coverage
-htmlcov/
+
 *.egg-info/
 

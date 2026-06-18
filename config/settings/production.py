@@ -35,3 +35,16 @@ if SENTRY_DSN:
 # Email via SendGrid
 EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
 ANYMAIL = {"SENDGRID_API_KEY": env("EMAIL_HOST_PASSWORD", default="")}
+
+# Disable Redis cache on free tier - use local memory instead
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
+
+# Celery disabled on free tier
+CELERY_TASK_ALWAYS_EAGER = True
+
+# Render handles SSL termination, this causes redirect loops
+SECURE_SSL_REDIRECT = False
