@@ -11,7 +11,7 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Only read .env file if it exists (local dev only)
-import os
+env = environ.Env(DEBUG=(bool, False))
 env_file = BASE_DIR / ".env"
 if os.path.exists(env_file):
     environ.Env.read_env(env_file)
