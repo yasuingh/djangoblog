@@ -91,9 +91,17 @@ WSGI_APPLICATION = "config.wsgi.application"
 # --------------------------------------------------------------------------- #
 # Database
 # --------------------------------------------------------------------------- #
+import re
+DATABASE_URL = config('DATABASE_URL', default='sqlite:///db.sqlite3')
+DATABASE_URL = re.sub(r'^postgresql://', 'postgres://', DATABASE_URL)
+DATABASES = {
+    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)
+}
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL')
+        default=config('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=False,
     )
 }
 
