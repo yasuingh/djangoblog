@@ -1,6 +1,7 @@
 """
 Base settings shared across all environments.
 """
+
 import os
 from pathlib import Path
 import environ
@@ -9,8 +10,12 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-env = environ.Env(DEBUG=(bool, False))
-environ.Env.read_env(BASE_DIR / ".env")
+# Only read .env file if it exists (local dev only)
+import os
+env_file = BASE_DIR / ".env"
+if os.path.exists(env_file):
+    environ.Env.read_env(env_file)
+
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
